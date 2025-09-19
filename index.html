@@ -87,15 +87,8 @@ snapBtn.addEventListener('click', () => {
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
   
-  // 描画コンテキストを左右反転させる
-  context.translate(canvas.width, 0);
-  context.scale(-1, 1);
-
   // カメラ映像をキャンバスに描画
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-
-  // コンテキストを元に戻す
-  context.setTransform(1, 0, 0, 1, 0, 0);
   
   // フレーム画像を重ねて描画
   context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
