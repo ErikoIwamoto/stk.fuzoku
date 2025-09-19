@@ -6,14 +6,14 @@
   <style>
     html,body {margin:0; height:100%; overflow:hidden; background:#000;}
     #cam    {position:absolute; width:100%; height:100%; object-fit:cover;}
-   #frame {
-　　  position: absolute; 
-　　  top: 0;
-　　  left: 0;
-　　  width: 100%; 
-　　  height: 100%;
-　　  object-fit: fill; /* このように変更 */
-　　}
+    #frame {
+      position: absolute; 
+      top: 0;
+      left: 0;
+      width: 100%; 
+      height: 100%;
+      object-fit: contain;
+    }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
       z-index: 10;
@@ -41,8 +41,24 @@
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
-const frameEl = document.getElementById('frame'); // フレーム画像要素を追加
+const frameEl = document.getElementById('frame');
 let currentFacing = 'user';
+
+// 画面の向きに合わせてフレーム画像を切り替える関数
+function updateFrameImage() {
+  if (window.innerHeight > window.innerWidth) {
+    // 画面が縦長の場合
+    frameEl.src = 'myframe_v.png';
+  } else {
+    // 画面が横長の場合
+    frameEl.src = 'myframe_h.png';
+  }
+}
+
+// 画面の向きの変化を監視
+window.addEventListener('resize', updateFrameImage);
+// 初回読み込み時にも実行
+window.addEventListener('DOMContentLoaded', updateFrameImage);
 
 async function startCamera(facing) {
   if (videoEl.srcObject) {
@@ -72,15 +88,15 @@ document.getElementById('switchBtn').addEventListener('click', () => {
 snapBtn.addEventListener('click', () => {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-
+  
+  // canvasのサイズをvideo要素と同じにする
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
 
-  // 1. カメラ映像をキャンバスに描画
+  // カメラ映像をキャンバスに描画
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   
-  // 2. その上にフレーム画像を重ねて描画
-  // frameEl.naturalWidth, frameEl.naturalHeight で元の画像サイズを取得
+  // フレーム画像を重ねて描画
   context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
 
   const imageDataURL = canvas.toDataURL('image/png');
