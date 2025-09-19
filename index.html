@@ -12,7 +12,7 @@
       left: 0;
       width: 100%; 
       height: 100%;
-      object-fit: fill; /* この行を変更しました */
+      object-fit: fill; 
     }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
@@ -44,20 +44,15 @@ const snapBtn = document.getElementById('snapBtn');
 const frameEl = document.getElementById('frame');
 let currentFacing = 'user';
 
-// 画面の向きに合わせてフレーム画像を切り替える関数
 function updateFrameImage() {
   if (window.innerHeight > window.innerWidth) {
-    // 画面が縦長の場合
     frameEl.src = 'myframe_v.png';
   } else {
-    // 画面が横長の場合
     frameEl.src = 'myframe_h.png';
   }
 }
 
-// 画面の向きの変化を監視
 window.addEventListener('resize', updateFrameImage);
-// 初回読み込み時にも実行
 window.addEventListener('DOMContentLoaded', updateFrameImage);
 
 async function startCamera(facing) {
@@ -91,7 +86,7 @@ snapBtn.addEventListener('click', () => {
   
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
-
+  
   // カメラ映像をキャンバスに描画
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   
