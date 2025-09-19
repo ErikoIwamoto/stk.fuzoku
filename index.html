@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>自作PNGのARフォトフレーム</title>
+
+  <!-- A-Frame と AR.js -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    body { margin:0; }
+    #snapBtn {
+      position: fixed; top: 10px; left: 10px;
+      z-index: 10;
+      padding: 8px 12px;
+      background: #fff; border: 1px solid #ccc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<button id="snapBtn">写真を撮る</button>
+
+<a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+  <!-- マーカー preset は 'hiro' のまま。hiroマーカーを印刷して使用 -->
+  <a-marker preset="hiro">
+    <!-- ここがフレーム画像。自作透過PNGを指定 -->
+    <a-plane src="myframe.png"
+             position="0 0 0.05"
+             rotation="-90 0 0"
+             width="1.2" height="0.8"
+             material="transparent: true;">
+    </a-plane>
+  </a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
+
+<script>
+document.getElementById('snapBtn').addEventListener('click', () => {
+  const scene = document.querySelector('a-scene');
+  const canvas = scene.components.screenshot.getCanvas('perspective');
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'ar-photo.png';
+  a.click();
+});
+</script>
+</body>
+</html>
