@@ -34,6 +34,7 @@
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
+const frameEl = document.getElementById('frame'); // フレーム画像要素を追加
 let currentFacing = 'user';
 
 async function startCamera(facing) {
@@ -68,13 +69,18 @@ snapBtn.addEventListener('click', () => {
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
 
+  // 1. カメラ映像をキャンバスに描画
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   
+  // 2. その上にフレーム画像を重ねて描画
+  // frameEl.naturalWidth, frameEl.naturalHeight で元の画像サイズを取得
+  context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
+
   const imageDataURL = canvas.toDataURL('image/png');
   
   const link = document.createElement('a');
   link.href = imageDataURL;
-  link.download = 'my-photo.png';
+  link.download = 'my-framed-photo.png';
   link.click();
 });
 </script>
