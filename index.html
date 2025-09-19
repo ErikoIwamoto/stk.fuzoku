@@ -1,22 +1,87 @@
+<!doctype html>
+<html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>カメラ切替付きフォトフレーム</title>
+  <title>横向き固定フォトフレーム</title>
   <style>
-    html,body {margin:0; height:100%; overflow:hidden; background:#000;}
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
 
+    /* ★ カメラ映像＆フレームを常に横向き固定 ★ */
     #cam, #frame {
-      width: 100vh;
-      height: 100vw;
-      object-fit: cover;
+      position: absolute;
+      width: 100vh;         /* 端末の高さを横幅として使用 */
+      height: 100vw;        /* 端末の幅を縦高さとして使用 */
+      object-fit: cover;    /* 画面全体をカバー */
       transform: rotate(90deg);
       transform-origin: center center;
     }
 
+    /* カメラ切り替えボタン */
     #switchBtn {
-      position:absolute; bottom:20px; right:20px; z-index:10;
-      padding:10px 16px; font-size:16px;
-      background:#fff; border:none; border-radius:8px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.4);
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10;
+      padding: 10px 16px;
+      font-size: 16px;
+      background: #fff;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      cursor: pointer;
     }
   </style>
 </head>
+<body>
+  <!-- カメラ映像 -->
+  <video id="cam" autoplay playsinline muted></video>
+  <!-- 透過PNGフレーム（同じフォルダに frame.png を置く） -->
+  <img id="frame" src="myframe.png" alt="frame">
+  <!-- 切替ボタン -->
+  <button id="switchBtn">カメラ切替</button>
+
+  <script>
+    const videoEl = document.getElementById('cam');
+    let currentFacing = 'user'; // 初期は内カメラ
+
+    async function startCamera(facing) {
+      // 既存ストリーム停止
+      if (videoEl.srcObject) {
+        videoEl.srcObject.getTracks().forEach(t => t.stop());
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: facing } },
+          audio: false
+        });
+        videoEl.srcObject = stream;
+        currentFacing = facing;
+      } catch (err) {
+        console.error(err);
+        alert('カメラ取得エラー: ' + err.message);
+      }
+    }
+
+    // 初期起動
+    startCamera(currentFacing);
+
+    // ボタンで内⇔外を切り替え
+    document.getElementById('switchBtn').addEventListener('click', () => {
+      const next = currentFacing === 'user' ? 'environment' : 'user';
+      startCamera(next);
+    });
+
+    // 画面を横向きにロック（対応ブラウザのみ）
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(()=>{});
+    }
+  </script>
+</body>
+</html>
