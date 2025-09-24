@@ -17,6 +17,13 @@
       height: 100%;
       object-fit: fill; 
     }
+    .controls {
+      display: block; /* 常に表示 */
+      transition: opacity 0.3s;
+    }
+    .controls.hidden {
+      display: none; /* 非表示 */
+    }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
       z-index: 10;
@@ -41,18 +48,17 @@
       z-index: 20;
       transition: opacity 0.1s ease-in-out;
     }
-    /* 写真表示画面のスタイル */
     #photo-view {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
       background-color: black;
       z-index: 30;
-      display: none; /* 初期状態では非表示 */
+      display: none;
       align-items: center;
       justify-content: center;
     }
     #photo-view.visible {
-      display: flex; /* 表示状態 */
+      display: flex;
     }
     #photo-view img {
       width: 100%;
@@ -76,8 +82,11 @@
 <body>
   <video id="cam" autoplay playsinline muted></video>
   <img id="frame" src="myframe.png" alt="frame">
-  <button id="switchBtn">カメラ切替</button>
-  <button id="snapBtn">写真を撮る</button>
+  
+  <div id="controls" class="controls">
+    <button id="switchBtn">カメラ切替</button>
+    <button id="snapBtn">写真を撮る</button>
+  </div>
   
   <div id="shutter"></div>
   <div id="photo-view">
@@ -88,12 +97,12 @@
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
-const switchBtn = document.getElementById('switchBtn');
 const frameEl = document.getElementById('frame');
 const shutterEl = document.getElementById('shutter');
 const photoViewEl = document.getElementById('photo-view');
 const capturedPhotoEl = document.getElementById('captured-photo');
 const backBtnEl = document.getElementById('backBtn');
+const controlsEl = document.getElementById('controls'); // 新しい要素を取得
 let currentFacing = 'user';
 
 function updateFrameImage() {
@@ -134,32 +143,20 @@ async function startCamera(facing) {
 
 startCamera(currentFacing);
 
-// ボタンを制御する関数
-function setButtonState(disabled) {
-  snapBtn.disabled = disabled;
-  switchBtn.disabled = disabled;
-  if (disabled) {
-    snapBtn.style.opacity = '0.5';
-    switchBtn.style.opacity = '0.5';
-  } else {
-    snapBtn.style.opacity = '1';
-    switchBtn.style.opacity = '1';
-  }
-}
-
 document.getElementById('switchBtn').addEventListener('click', () => {
   const next = currentFacing === 'user' ? 'environment' : 'user';
   startCamera(next);
 });
 
 snapBtn.addEventListener('click', () => {
-  setButtonState(true); // ボタンを無効化
-  
   // シャッターアニメーション
   shutterEl.style.opacity = '1';
   setTimeout(() => {
     shutterEl.style.opacity = '0';
   }, 100);
+
+  // ボタンを非表示にする
+  controlsEl.classList.add('hidden');
 
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -180,15 +177,14 @@ snapBtn.addEventListener('click', () => {
 
   const imageDataURL = canvas.toDataURL('image/png');
   
-  // 撮影した写真を全画面で表示
   capturedPhotoEl.src = imageDataURL;
-  photoViewEl.classList.add('visible'); // visibleクラスを追加
+  photoViewEl.classList.add('visible');
 });
 
-// 戻るボタンのイベントリスナー
 backBtnEl.addEventListener('click', () => {
-  photoViewEl.classList.remove('visible'); // visibleクラスを削除
-  setButtonState(false); // ボタンを有効化
+  photoViewEl.classList.remove('visible');
+  // ボタンを再度表示する
+  controlsEl.classList.remove('hidden');
 });
 </script>
 </body>
