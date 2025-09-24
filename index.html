@@ -124,12 +124,11 @@ async function startCamera(facing) {
       audio: false
     });
     videoEl.srcObject = stream;
-    currentFacing = facing;
+    
+    // カメラの映像が読み込まれるのを待つ
+    await videoEl.play(); 
 
-    // カメラのメタデータが読み込まれたら再生を開始
-    videoEl.onloadedmetadata = () => {
-        videoEl.play();
-    };
+    currentFacing = facing;
 
     if (facing === 'user') {
       videoEl.classList.add('user-facing');
@@ -147,7 +146,7 @@ window.onload = function() {
     startCamera(currentFacing);
 };
 
-snapBtn.addEventListener('click', (e) => {
+snapBtn.addEventListener('click', async (e) => { // asyncを追加
   e.preventDefault();
   
   snapBtn.style.display = 'none';
@@ -169,6 +168,9 @@ snapBtn.addEventListener('click', (e) => {
     context.scale(-1, 1);
   }
 
+  // awaitを追加して、映像が確実に描画されるのを待つ
+  await new Promise(r => videoEl.onloadeddata = r);
+  
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   
   context.setTransform(1, 0, 0, 1, 0, 0);
