@@ -5,7 +5,8 @@
   <title>カメラ切替付きフォトフレーム</title>
   <style>
     html,body {margin:0; height:100%; overflow:hidden; background:#000;}
-    #cam    {position:absolute; width:100%; height:100%; object-fit:cover; z-index: -1;}
+    #cam    {position:absolute; width:100%; height:100%; object-fit:cover;}
+    /* 内カメラ使用時に左右反転させるCSSを追加 */
     #cam.user-facing {
       transform: scaleX(-1);
     }
@@ -15,27 +16,22 @@
       left: 0;
       width: 100%; 
       height: 100%;
-      object-fit: fill;
-    }
-    .button-link {
-        text-decoration: none;
-        color: #000;
-        text-align: center;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        background: #fff;
+      object-fit: fill; 
     }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
       z-index: 10;
       padding: 10px 16px; 
+      background: #fff; border: none; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4); 
       font-size: 16px; 
     }
     #switchBtn {
       position: fixed; top: 10px; left: 10px;
       z-index: 10;
       padding: 8px 12px; 
-      border: 1px solid #ccc; 
+      background: #fff; border: 1px solid #ccc; 
       font-size: 14px; 
     }
   </style>
@@ -43,14 +39,12 @@
 <body>
   <video id="cam" autoplay playsinline muted></video>
   <img id="frame" src="myframe.png" alt="frame">
-  
-  <a href="#" id="switchBtn" class="button-link">カメラ切替</a>
-  <a href="#" id="snapBtn" class="button-link">写真を撮る</a>
+  <button id="switchBtn">カメラ切替</button>
+  <button id="snapBtn">写真を撮る</button>
   
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
-const switchBtn = document.getElementById('switchBtn');
 const frameEl = document.getElementById('frame');
 let currentFacing = 'user';
 
@@ -78,6 +72,7 @@ async function startCamera(facing) {
     videoEl.srcObject = stream;
     currentFacing = facing;
 
+    // カメラの向きに応じてクラスを追加/削除
     if (facing === 'user') {
       videoEl.classList.add('user-facing');
     } else {
@@ -86,23 +81,45 @@ async function startCamera(facing) {
 
   } catch (err) {
     console.error(err);
-    alert('カメラへのアクセスが拒否されました。設定を確認してください。');
+    alert('カメラ取得エラー: ' + err.message);
   }
 }
 
-window.onload = function() {
-    startCamera(currentFacing);
-};
+startCamera(currentFacing);
 
-snapBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  alert('写真を撮るボタンが押されました。');
+document.getElementById('switchBtn').addEventListener('click', () => {
+  const next = currentFacing === 'user' ? 'environment' : 'user';
+  startCamera(next);
 });
 
-switchBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const next = currentFacing === 'user' ? 'environment' : 'user';
-    startCamera(next);
+snapBtn.addEventListener('click', () => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  canvas.width = videoEl.videoWidth;
+  canvas.height = videoEl.videoHeight;
+  
+  // 鏡像に映る内カメラの時にだけ、canvasに描画する際に左右反転させる
+  if (currentFacing === 'user') {
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+  }
+
+  // カメラ映像をキャンバスに描画
+  context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+  
+  // コンテキストを元の状態に戻す（フレームの描画に影響しないように）
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  
+  // フレーム画像を重ねて描画
+  context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
+
+  const imageDataURL = canvas.toDataURL('image/png');
+  
+  const link = document.createElement('a');
+  link.href = imageDataURL;
+  link.download = 'my-framed-photo.png';
+  link.click();
 });
 </script>
 </body>
