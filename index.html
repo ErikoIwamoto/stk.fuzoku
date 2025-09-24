@@ -18,13 +18,16 @@
       object-fit: fill;
     }
     .button-link {
-        display: block;
+        display: none; /* 初期状態では非表示 */
         text-decoration: none;
         color: #000;
         text-align: center;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         background: #fff;
+    }
+    .visible {
+        display: block; /* 準備完了後に表示 */
     }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
@@ -125,8 +128,12 @@ async function startCamera(facing) {
     });
     videoEl.srcObject = stream;
     
-    // カメラの映像が読み込まれるのを待つ
-    await videoEl.play(); 
+    // カメラのメタデータが読み込まれたらボタンを表示する
+    videoEl.onloadedmetadata = () => {
+        videoEl.play();
+        snapBtn.classList.add('visible');
+        switchBtn.classList.add('visible');
+    };
 
     currentFacing = facing;
 
@@ -146,11 +153,11 @@ window.onload = function() {
     startCamera(currentFacing);
 };
 
-snapBtn.addEventListener('click', async (e) => { // asyncを追加
+snapBtn.addEventListener('click', (e) => {
   e.preventDefault();
   
-  snapBtn.style.display = 'none';
-  switchBtn.style.display = 'none';
+  snapBtn.classList.remove('visible');
+  switchBtn.classList.remove('visible');
 
   shutterEl.style.opacity = '1';
   setTimeout(() => {
@@ -168,9 +175,6 @@ snapBtn.addEventListener('click', async (e) => { // asyncを追加
     context.scale(-1, 1);
   }
 
-  // awaitを追加して、映像が確実に描画されるのを待つ
-  await new Promise(r => videoEl.onloadeddata = r);
-  
   context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
   
   context.setTransform(1, 0, 0, 1, 0, 0);
@@ -193,8 +197,8 @@ switchBtn.addEventListener('click', (e) => {
 backBtnEl.addEventListener('click', () => {
   photoViewEl.classList.remove('visible');
   
-  snapBtn.style.display = 'block';
-  switchBtn.style.display = 'block';
+  snapBtn.classList.add('visible');
+  switchBtn.classList.add('visible');
 });
 </script>
 </body>
