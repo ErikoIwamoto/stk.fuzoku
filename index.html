@@ -5,7 +5,7 @@
   <title>カメラ切替付きフォトフレーム</title>
   <style>
     html,body {margin:0; height:100%; overflow:hidden; background:#000;}
-    #cam    {position:absolute; width:100%; height:100%; object-fit:cover; z-index: -1;} /* z-indexを-1に設定 */
+    #cam    {position:absolute; width:100%; height:100%; object-fit:cover; z-index: -1;}
     #cam.user-facing {
       transform: scaleX(-1);
     }
@@ -126,6 +126,11 @@ async function startCamera(facing) {
     videoEl.srcObject = stream;
     currentFacing = facing;
 
+    // カメラのメタデータが読み込まれたら再生を開始
+    videoEl.onloadedmetadata = () => {
+        videoEl.play();
+    };
+
     if (facing === 'user') {
       videoEl.classList.add('user-facing');
     } else {
@@ -134,20 +139,20 @@ async function startCamera(facing) {
 
   } catch (err) {
     console.error(err);
-    alert('カメラ取得エラー: ' + err.message);
+    alert('カメラへのアクセスが拒否されました。設定を確認してください。');
   }
 }
 
-startCamera(currentFacing);
+window.onload = function() {
+    startCamera(currentFacing);
+};
 
 snapBtn.addEventListener('click', (e) => {
-  e.preventDefault(); // aタグのデフォルトの動作を無効にする
+  e.preventDefault();
   
-  // ボタンを非表示にする
   snapBtn.style.display = 'none';
   switchBtn.style.display = 'none';
 
-  // シャッターアニメーション
   shutterEl.style.opacity = '1';
   setTimeout(() => {
     shutterEl.style.opacity = '0';
@@ -177,7 +182,7 @@ snapBtn.addEventListener('click', (e) => {
 });
 
 switchBtn.addEventListener('click', (e) => {
-    e.preventDefault(); // aタグのデフォルトの動作を無効にする
+    e.preventDefault();
     const next = currentFacing === 'user' ? 'environment' : 'user';
     startCamera(next);
 });
@@ -185,7 +190,7 @@ switchBtn.addEventListener('click', (e) => {
 
 backBtnEl.addEventListener('click', () => {
   photoViewEl.classList.remove('visible');
-  // ボタンを再度表示する
+  
   snapBtn.style.display = 'block';
   switchBtn.style.display = 'block';
 });
