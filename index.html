@@ -61,7 +61,7 @@
       display: none; 
       align-items: center;
       justify-content: center;
-      flex-direction: column; /* ボタンを下に配置するため */
+      flex-direction: column; 
     }
     #photo-view.visible {
       display: flex;
@@ -112,7 +112,7 @@ const shutterEl = document.getElementById('shutter');
 const photoViewEl = document.getElementById('photo-view');
 const capturedPhotoEl = document.getElementById('captured-photo');
 const backBtnEl = document.getElementById('backBtn');
-const saveBtnEl = document.getElementById('saveBtn'); // 保存ボタン
+const saveBtnEl = document.getElementById('saveBtn');
 
 let currentFacing = 'user';
 
@@ -187,10 +187,11 @@ snapBtn.addEventListener('click', () => {
   }, 100);
 
   const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  
+  // カメラの実際の解像度をキャンバスのサイズに設定
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
+  
+  const context = canvas.getContext('2d');
   
   if (currentFacing === 'user') {
     context.translate(canvas.width, 0);
@@ -201,6 +202,7 @@ snapBtn.addEventListener('click', () => {
   
   context.setTransform(1, 0, 0, 1, 0, 0);
   
+  // フレーム画像の縦横比を調整して描画
   context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
 
   const imageDataURL = canvas.toDataURL('image/png');
