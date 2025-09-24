@@ -128,11 +128,11 @@ async function startCamera(facing) {
     });
     videoEl.srcObject = stream;
     
-    // カメラのメタデータが読み込まれたらボタンを表示する
-    videoEl.onloadedmetadata = () => {
-        videoEl.play();
-        snapBtn.classList.add('visible');
-        switchBtn.classList.add('visible');
+    // カメラの映像データが読み込まれるのを待機する
+    videoEl.onloadeddata = () => {
+      videoEl.play();
+      snapBtn.classList.add('visible');
+      switchBtn.classList.add('visible');
     };
 
     currentFacing = facing;
