@@ -25,7 +25,6 @@
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         background: #fff;
-        /* `display: block` にすることで、`hidden` クラスで `display: none` に切り替えやすくなります */
         display: block; 
     }
     #snapBtn {
@@ -48,9 +47,9 @@
       width: 100%; height: 100%;
       background-color: white;
       opacity: 0;
-      z-index: 20; /* ボタンより高いz-index */
+      z-index: 20; 
       transition: opacity 0.1s ease-in-out;
-      pointer-events: none; /* クリックイベントを透過させる */
+      pointer-events: none; 
     }
     /* 撮影した写真を表示する画面 */
     #photo-view {
@@ -58,10 +57,11 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       background-color: black;
-      z-index: 30; /* シャッターより高いz-index */
-      display: none; /* 初期状態では非表示 */
+      z-index: 30; 
+      display: none; 
       align-items: center;
       justify-content: center;
+      flex-direction: column; /* ボタンを下に配置するため */
     }
     #photo-view.visible {
       display: flex;
@@ -69,24 +69,21 @@
     #photo-view img {
       width: 100%;
       height: 100%;
-      object-fit: contain; /* アスペクト比を保ちつつ全体を表示 */
+      object-fit: contain; 
     }
-    /* 戻るボタン */
-    #backBtn {
-      position: absolute; bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 40; /* photo-view より高いz-index */
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #fff;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    /* 戻るボタンと保存ボタンのコンテナ */
+    #photo-buttons {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        display: flex;
+        gap: 20px;
     }
-    /* 要素を一時的に非表示にするためのクラス */
+    /* ボタンを一時的に非表示にするためのクラス */
     .hidden {
-      display: none !important; /* `!important` で確実に非表示にする */
+      display: none !important;
     }
   </style>
 </head>
@@ -100,7 +97,10 @@
   <div id="shutter"></div>
   <div id="photo-view">
     <img id="captured-photo" src="" alt="Captured Photo">
-    <button id="backBtn">戻る</button>
+    <div id="photo-buttons">
+      <button id="backBtn">戻る</button>
+      <button id="saveBtn">保存する</button>
+    </div>
   </div>
   
 <script>
@@ -108,10 +108,11 @@ const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
 const switchBtn = document.getElementById('switchBtn');
 const frameEl = document.getElementById('frame');
-const shutterEl = document.getElementById('shutter'); // シャッター要素
-const photoViewEl = document.getElementById('photo-view'); // 写真表示画面
-const capturedPhotoEl = document.getElementById('captured-photo'); // 撮影した写真のimg要素
-const backBtnEl = document.getElementById('backBtn'); // 戻るボタン
+const shutterEl = document.getElementById('shutter');
+const photoViewEl = document.getElementById('photo-view');
+const capturedPhotoEl = document.getElementById('captured-photo');
+const backBtnEl = document.getElementById('backBtn');
+const saveBtnEl = document.getElementById('saveBtn'); // 保存ボタン
 
 let currentFacing = 'user';
 
@@ -147,31 +148,26 @@ async function startCamera(facing) {
 
     videoEl.onloadeddata = () => {
       videoEl.play();
-      // カメラが起動して映像が表示されたらボタンを表示
       showButtons(); 
     };
 
   } catch (err) {
     console.error(err);
     alert('カメラ取得エラー: ' + err.message + '\n設定からカメラのアクセス許可を確認してください。');
-    // エラー時はボタンを非表示のままにするか、再試行ボタンなどを表示
     hideButtons(); 
   }
 }
 
-// ボタンを非表示にする関数
 function hideButtons() {
     snapBtn.classList.add('hidden');
     switchBtn.classList.add('hidden');
 }
 
-// ボタンを表示する関数
 function showButtons() {
     snapBtn.classList.remove('hidden');
     switchBtn.classList.remove('hidden');
 }
 
-// 初期化時にボタンを非表示にしておく
 hideButtons(); 
 window.onload = function() {
     startCamera(currentFacing);
@@ -183,9 +179,8 @@ switchBtn.addEventListener('click', () => {
 });
 
 snapBtn.addEventListener('click', () => {
-  hideButtons(); // 撮影中はボタンを非表示
+  hideButtons();
 
-  // シャッターアニメーション
   shutterEl.style.opacity = '1';
   setTimeout(() => {
     shutterEl.style.opacity = '0';
@@ -210,15 +205,20 @@ snapBtn.addEventListener('click', () => {
 
   const imageDataURL = canvas.toDataURL('image/png');
   
-  // 撮影した写真を`photo-view`に表示
   capturedPhotoEl.src = imageDataURL;
-  photoViewEl.classList.add('visible'); // 写真表示画面を表示
+  photoViewEl.classList.add('visible');
 });
 
-// 戻るボタンのイベントリスナー
 backBtnEl.addEventListener('click', () => {
-    photoViewEl.classList.remove('visible'); // 写真表示画面を非表示
-    showButtons(); // ボタンを再表示
+    photoViewEl.classList.remove('visible');
+    showButtons();
+});
+
+saveBtnEl.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.href = capturedPhotoEl.src;
+  link.download = 'my-framed-photo.png';
+  link.click();
 });
 </script>
 </body>
