@@ -41,21 +41,18 @@
       z-index: 20;
       transition: opacity 0.1s ease-in-out;
     }
+    /* 写真表示画面のスタイル */
     #photo-view {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
       background-color: black;
       z-index: 30;
-      display: none; 
+      display: none; /* 初期状態では非表示 */
       align-items: center;
       justify-content: center;
-      /* 修正点: 非表示時はクリックを透過させる */
-      pointer-events: none; 
     }
-    #photo-view.active {
-      display: flex;
-      /* 修正点: 表示時はクリックを有効にする */
-      pointer-events: all; 
+    #photo-view.visible {
+      display: flex; /* 表示状態 */
     }
     #photo-view img {
       width: 100%;
@@ -91,6 +88,7 @@
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
+const switchBtn = document.getElementById('switchBtn');
 const frameEl = document.getElementById('frame');
 const shutterEl = document.getElementById('shutter');
 const photoViewEl = document.getElementById('photo-view');
@@ -136,12 +134,27 @@ async function startCamera(facing) {
 
 startCamera(currentFacing);
 
+// ボタンを制御する関数
+function setButtonState(disabled) {
+  snapBtn.disabled = disabled;
+  switchBtn.disabled = disabled;
+  if (disabled) {
+    snapBtn.style.opacity = '0.5';
+    switchBtn.style.opacity = '0.5';
+  } else {
+    snapBtn.style.opacity = '1';
+    switchBtn.style.opacity = '1';
+  }
+}
+
 document.getElementById('switchBtn').addEventListener('click', () => {
   const next = currentFacing === 'user' ? 'environment' : 'user';
   startCamera(next);
 });
 
 snapBtn.addEventListener('click', () => {
+  setButtonState(true); // ボタンを無効化
+  
   // シャッターアニメーション
   shutterEl.style.opacity = '1';
   setTimeout(() => {
@@ -169,12 +182,13 @@ snapBtn.addEventListener('click', () => {
   
   // 撮影した写真を全画面で表示
   capturedPhotoEl.src = imageDataURL;
-  photoViewEl.classList.add('active'); // activeクラスを追加
+  photoViewEl.classList.add('visible'); // visibleクラスを追加
 });
 
 // 戻るボタンのイベントリスナー
 backBtnEl.addEventListener('click', () => {
-  photoViewEl.classList.remove('active'); // activeクラスを削除
+  photoViewEl.classList.remove('visible'); // visibleクラスを削除
+  setButtonState(false); // ボタンを有効化
 });
 </script>
 </body>
