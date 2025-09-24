@@ -17,12 +17,9 @@
       height: 100%;
       object-fit: fill; 
     }
-    #snapBtn, #switchBtn {
-      position: absolute; /* z-indexを有効にする */
-      z-index: 10;
-    }
     #snapBtn {
-      bottom: 20px; right: 20px;
+      position: absolute; bottom: 20px; right: 20px;
+      z-index: 10;
       padding: 10px 16px; 
       background: #fff; border: none; 
       border-radius: 8px; 
@@ -30,7 +27,8 @@
       font-size: 16px; 
     }
     #switchBtn {
-      top: 10px; left: 10px;
+      position: fixed; top: 10px; left: 10px;
+      z-index: 10;
       padding: 8px 12px; 
       background: #fff; border: 1px solid #ccc; 
       font-size: 14px; 
@@ -47,15 +45,12 @@
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
       background-color: black;
-      /* 初期状態ではボタンよりも低いz-indexに設定 */
-      z-index: 5;
+      z-index: 30;
       display: none;
       align-items: center;
       justify-content: center;
     }
     #photo-view.visible {
-      /* 表示時にz-indexを上げて最前面に */
-      z-index: 30;
       display: flex;
     }
     #photo-view img {
@@ -67,16 +62,13 @@
       position: absolute; bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 40; /* photo-view.visibleより高いz-indexに */
+      z-index: 40;
       padding: 10px 20px;
       font-size: 16px;
       background: #fff;
       border: none;
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
-    .hidden {
-      display: none;
     }
   </style>
 </head>
@@ -142,10 +134,26 @@ async function startCamera(facing) {
 
 startCamera(currentFacing);
 
+// ボタンを非表示にする関数
+function hideButtons() {
+  snapBtn.style.display = 'none';
+  switchBtn.style.display = 'none';
+}
+
+// ボタンを再度表示する関数
+function showButtons() {
+  snapBtn.style.display = 'block';
+  switchBtn.style.display = 'block';
+}
+
+switchBtn.addEventListener('click', () => {
+  const next = currentFacing === 'user' ? 'environment' : 'user';
+  startCamera(next);
+});
+
 snapBtn.addEventListener('click', () => {
   // ボタンを非表示にする
-  snapBtn.classList.add('hidden');
-  switchBtn.classList.add('hidden');
+  hideButtons();
 
   // シャッターアニメーション
   shutterEl.style.opacity = '1';
@@ -179,8 +187,7 @@ snapBtn.addEventListener('click', () => {
 backBtnEl.addEventListener('click', () => {
   photoViewEl.classList.remove('visible');
   // ボタンを再度表示する
-  snapBtn.classList.remove('hidden');
-  switchBtn.classList.remove('hidden');
+  showButtons();
 });
 </script>
 </body>
