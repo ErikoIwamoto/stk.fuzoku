@@ -70,6 +70,9 @@
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -134,26 +137,11 @@ async function startCamera(facing) {
 
 startCamera(currentFacing);
 
-// ボタンを非表示にする関数
-function hideButtons() {
-  snapBtn.style.display = 'none';
-  switchBtn.style.display = 'none';
-}
-
-// ボタンを再度表示する関数
-function showButtons() {
-  snapBtn.style.display = 'block';
-  switchBtn.style.display = 'block';
-}
-
-switchBtn.addEventListener('click', () => {
-  const next = currentFacing === 'user' ? 'environment' : 'user';
-  startCamera(next);
-});
-
 snapBtn.addEventListener('click', () => {
-  // ボタンを非表示にする
-  hideButtons();
+  // ボタンとビデオ要素を非表示にする
+  snapBtn.classList.add('hidden');
+  switchBtn.classList.add('hidden');
+  videoEl.classList.add('hidden'); // ✨追加: video要素を非表示にする
 
   // シャッターアニメーション
   shutterEl.style.opacity = '1';
@@ -186,8 +174,11 @@ snapBtn.addEventListener('click', () => {
 
 backBtnEl.addEventListener('click', () => {
   photoViewEl.classList.remove('visible');
-  // ボタンを再度表示する
-  showButtons();
+
+  // ボタンとビデオ要素を再度表示する
+  snapBtn.classList.remove('hidden');
+  switchBtn.classList.remove('hidden');
+  videoEl.classList.remove('hidden'); // ✨追加: video要素を再表示する
 });
 </script>
 </body>
