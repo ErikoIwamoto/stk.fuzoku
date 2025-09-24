@@ -18,11 +18,11 @@
       object-fit: fill; 
     }
     .controls {
-      display: block; /* 常に表示 */
+      display: block; 
       transition: opacity 0.3s;
     }
     .controls.hidden {
-      display: none; /* 非表示 */
+      display: none;
     }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
@@ -54,11 +54,13 @@
       background-color: black;
       z-index: 30;
       display: none;
+      visibility: hidden; /* 追加: 非表示時にイベントを透過させる */
       align-items: center;
       justify-content: center;
     }
     #photo-view.visible {
       display: flex;
+      visibility: visible; /* 追加: 表示時にイベントを有効にする */
     }
     #photo-view img {
       width: 100%;
@@ -102,7 +104,7 @@ const shutterEl = document.getElementById('shutter');
 const photoViewEl = document.getElementById('photo-view');
 const capturedPhotoEl = document.getElementById('captured-photo');
 const backBtnEl = document.getElementById('backBtn');
-const controlsEl = document.getElementById('controls'); // 新しい要素を取得
+const controlsEl = document.getElementById('controls');
 let currentFacing = 'user';
 
 function updateFrameImage() {
@@ -183,7 +185,6 @@ snapBtn.addEventListener('click', () => {
 
 backBtnEl.addEventListener('click', () => {
   photoViewEl.classList.remove('visible');
-  // ボタンを再度表示する
   controlsEl.classList.remove('hidden');
 });
 </script>
