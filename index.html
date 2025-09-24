@@ -18,7 +18,7 @@
       object-fit: fill;
     }
     .button-link {
-        display: none; /* 初期状態では非表示 */
+        display: none;
         text-decoration: none;
         color: #000;
         text-align: center;
@@ -27,7 +27,7 @@
         background: #fff;
     }
     .visible {
-        display: block; /* 準備完了後に表示 */
+        display: block;
     }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
@@ -82,7 +82,7 @@
   </style>
 </head>
 <body>
-  <video id="cam" autoplay playsinline muted></video>
+  <video id="cam" autoplay muted></video>
   <img id="frame" src="myframe.png" alt="frame">
   
   <a href="#" id="switchBtn" class="button-link">カメラ切替</a>
@@ -128,7 +128,6 @@ async function startCamera(facing) {
     });
     videoEl.srcObject = stream;
     
-    // カメラの映像データが読み込まれるのを待機する
     videoEl.onloadeddata = () => {
       videoEl.play();
       snapBtn.classList.add('visible');
