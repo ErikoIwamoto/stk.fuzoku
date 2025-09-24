@@ -134,7 +134,12 @@ async function startCamera(facing) {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: facing } },
+      video: { 
+        facingMode: { exact: facing },
+        // 高解像度を強制的にリクエスト
+        width: { exact: 1920 },
+        height: { exact: 1080 }
+      },
       audio: false
     });
     videoEl.srcObject = stream;
@@ -187,7 +192,6 @@ snapBtn.addEventListener('click', () => {
   }, 100);
 
   const canvas = document.createElement('canvas');
-  // カメラの実際の解像度をキャンバスのサイズに設定
   canvas.width = videoEl.videoWidth;
   canvas.height = videoEl.videoHeight;
   
@@ -202,7 +206,6 @@ snapBtn.addEventListener('click', () => {
   
   context.setTransform(1, 0, 0, 1, 0, 0);
   
-  // フレーム画像の縦横比を調整して描画
   context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
 
   const imageDataURL = canvas.toDataURL('image/png');
