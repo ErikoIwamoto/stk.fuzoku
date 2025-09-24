@@ -5,7 +5,7 @@
   <title>カメラ切替付きフォトフレーム</title>
   <style>
     html,body {margin:0; height:100%; overflow:hidden; background:#000;}
-    #cam    {position:absolute; width:100%; height:100%; object-fit:cover; z-index: -1;}
+    #cam    {position:absolute; width:100%; height:100%; object-fit:cover;}
     #cam.user-facing {
       transform: scaleX(-1);
     }
@@ -17,72 +17,21 @@
       height: 100%;
       object-fit: fill;
     }
-    .button-base {
-        text-decoration: none;
-        color: #000;
-        text-align: center;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-        background: #fff;
-    }
     #snapBtn {
       position: absolute; bottom: 20px; right: 20px;
       z-index: 10;
       padding: 10px 16px; 
+      background: #fff; border: none; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4); 
       font-size: 16px; 
     }
     #switchBtn {
       position: fixed; top: 10px; left: 10px;
       z-index: 10;
       padding: 8px 12px; 
-      border: 1px solid #ccc; 
+      background: #fff; border: 1px solid #ccc; 
       font-size: 14px; 
-    }
-    /* シャッターアニメーション用の要素 */
-    #shutter {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: white;
-      opacity: 0;
-      z-index: 20;
-      transition: opacity 0.1s ease-in-out;
-    }
-    /* 撮影した写真を表示する画面 */
-    #photo-view {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: black;
-      z-index: 30;
-      display: none;
-      align-items: center;
-      justify-content: center;
-    }
-    #photo-view.visible {
-      display: flex;
-    }
-    #photo-view img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-    /* 戻るボタン */
-    #backBtn {
-      position: absolute; bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 40;
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #fff;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    }
-    /* ボタンを一時的に非表示にするためのクラス */
-    .hidden {
-      display: none;
     }
   </style>
 </head>
@@ -90,25 +39,14 @@
   <video id="cam" autoplay playsinline muted></video>
   <img id="frame" src="myframe.png" alt="frame">
   
-  <button id="switchBtn" class="button-base">カメラ切替</button>
-  <button id="snapBtn" class="button-base">写真を撮る</button>
-
-  <div id="shutter"></div>
-  <div id="photo-view">
-    <img id="captured-photo" src="" alt="Captured Photo">
-    <button id="backBtn">戻る</button>
-  </div>
+  <button id="switchBtn">カメラ切替</button>
+  <button id="snapBtn">写真を撮る</button>
   
 <script>
 const videoEl = document.getElementById('cam');
 const snapBtn = document.getElementById('snapBtn');
-const switchBtn = document.getElementById('switchBtn');
 const frameEl = document.getElementById('frame');
-const shutterEl = document.getElementById('shutter');
-const photoViewEl = document.getElementById('photo-view');
-const capturedPhotoEl = document.getElementById('captured-photo');
-const backBtnEl = document.getElementById('backBtn');
-
+const switchBtn = document.getElementById('switchBtn'); // `switchBtn`を定義
 let currentFacing = 'user';
 
 function updateFrameImage() {
@@ -135,11 +73,17 @@ async function startCamera(facing) {
     videoEl.srcObject = stream;
     currentFacing = facing;
 
+    // カメラの向きに応じてクラスを追加/削除
     if (facing === 'user') {
       videoEl.classList.add('user-facing');
     } else {
       videoEl.classList.remove('user-facing');
     }
+
+    // カメラの映像データが読み込まれたら再生を開始
+    videoEl.onloadeddata = () => {
+      videoEl.play();
+    };
 
   } catch (err) {
     console.error(err);
@@ -147,55 +91,40 @@ async function startCamera(facing) {
   }
 }
 
-startCamera(currentFacing);
-
-function hideButtons() {
-    snapBtn.classList.add('hidden');
-    switchBtn.classList.add('hidden');
-}
-
-function showButtons() {
-    snapBtn.classList.remove('hidden');
-    switchBtn.classList.remove('hidden');
-}
+// ページ読み込み時にカメラを起動
+window.onload = function() {
+    startCamera(currentFacing);
+};
 
 switchBtn.addEventListener('click', () => {
-    const next = currentFacing === 'user' ? 'environment' : 'user';
-    startCamera(next);
+  const next = currentFacing === 'user' ? 'environment' : 'user';
+  startCamera(next);
 });
 
 snapBtn.addEventListener('click', () => {
-    hideButtons();
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  
+  canvas.width = videoEl.videoWidth;
+  canvas.height = videoEl.videoHeight;
+  
+  if (currentFacing === 'user') {
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+  }
 
-    shutterEl.style.opacity = '1';
-    setTimeout(() => {
-        shutterEl.style.opacity = '0';
-    }, 100);
+  context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+  
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  
+  context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
 
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    
-    canvas.width = videoEl.videoWidth;
-    canvas.height = videoEl.videoHeight;
-    
-    if (currentFacing === 'user') {
-        context.translate(canvas.width, 0);
-        context.scale(-1, 1);
-    }
-
-    context.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.drawImage(frameEl, 0, 0, canvas.width, canvas.height);
-
-    const imageDataURL = canvas.toDataURL('image/png');
-    
-    capturedPhotoEl.src = imageDataURL;
-    photoViewEl.classList.add('visible');
-});
-
-backBtnEl.addEventListener('click', () => {
-    photoViewEl.classList.remove('visible');
-    showButtons();
+  const imageDataURL = canvas.toDataURL('image/png');
+  
+  const link = document.createElement('a');
+  link.href = imageDataURL;
+  link.download = 'my-framed-photo.png';
+  link.click();
 });
 </script>
 </body>
